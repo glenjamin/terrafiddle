@@ -33,5 +33,30 @@ And then run it to generate some JSON
 ruby stuff.tf.rb > stuff.tf.json
 ```
 
-If you have a bunch of these, you'll probably want a Makefile.
+If you have a bunch of these, you'll probably want a Makefile. Here's an example:
 
+```make
+# Based on http://lincolnmullen.com/blog/make-and-pandoc/
+
+TERRAFORMS := $(patsubst %.rb,%.json,$(wildcard *.tf.rb))
+
+all : build plan
+
+build : $(TERRAFORMS)
+
+%.json : %.rb terrafiddle.rb
+  ruby $< > $@
+
+plan :
+  terraform plan
+
+clean :
+  rm $(TERRAFORMS)
+
+rebuild : clean build
+
+graph : graph.png
+
+graph.png :
+  terraform graph | dot -Tpng > $@
+```
