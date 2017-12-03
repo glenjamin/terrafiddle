@@ -1,20 +1,26 @@
-# Terrafiddle v0.1.0
+# Terrafiddle v0.2.0
 # http://github.com/glenjamin/terrafiddle
 
 class << self
-  def resource(type, name, attributes)
-    $resource ||= begin
-      autohash = lambda do
-        Hash.new { |h, k| h[k] = autohash.call }
-      end
-      autohash.call
-    end
+  def autohash
+    Hash.new { |h, k| h[k] = autohash }
+  end
 
+  def resource(type, name, attributes)
+    $resource ||= autohash
     $resource[type][name] = attributes
+  end
+
+  def output(name, value)
+    $output ||= autohash
+    $output[name] = {value: value}
   end
 end
 
 at_exit do
   require 'json'
-  puts JSON.pretty_generate({ resource: $resource })
+  data = {}
+  data[:resource] = $resource if $resource
+  data[:output] = $output if $output
+  puts JSON.pretty_generate(data)
 end
